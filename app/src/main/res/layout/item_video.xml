@@ -7,6 +7,10 @@
         <variable
             name="item"
             type="kr.co.bullets.part3chapter5.model.VideoItem" />
+
+        <variable
+            name="handler"
+            type="kr.co.bullets.part3chapter5.list.ItemHandler" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -78,6 +82,7 @@
             android:id="@+id/favoriteImageView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="@{() -> handler.onClickFavorite(item)}"
             android:scaleType="centerCrop"
             app:favorite="@{item.favorite}"
             app:layout_constraintEnd_toEndOf="parent"

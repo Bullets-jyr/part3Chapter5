@@ -8,13 +8,15 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import kr.co.bullets.part3chapter5.databinding.FragmentSearchBinding
+import kr.co.bullets.part3chapter5.list.ItemHandler
 import kr.co.bullets.part3chapter5.list.ListAdapter
+import kr.co.bullets.part3chapter5.model.ListItem
 import kr.co.bullets.part3chapter5.repository.SearchRepositoryImpl
 
 class SearchFragment : Fragment() {
     private var binding: FragmentSearchBinding? = null
     private val adapter by lazy {
-        ListAdapter()
+        ListAdapter(Handler(viewModel))
     }
     private val viewModel: SearchViewModel by viewModels {
         SearchViewModel.SearchViewModelFactory(SearchRepositoryImpl(RetrofitManager.searchService))
@@ -61,6 +63,12 @@ class SearchFragment : Fragment() {
                 }
             }
             adapter.submitList(it)
+        }
+    }
+
+    class Handler(private val viewModel: SearchViewModel) : ItemHandler {
+        override fun onClickFavorite(item: ListItem) {
+            viewModel.toggleFavorite(item)
         }
     }
 }
