@@ -17,7 +17,6 @@ data class VideoItem(
     @SerializedName("play_time")
     val playTime: Int,
 
-    @SerializedName("author")
     val author: String,
 
     @SerializedName("datetime")

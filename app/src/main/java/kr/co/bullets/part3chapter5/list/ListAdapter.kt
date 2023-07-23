@@ -1,5 +1,6 @@
 package kr.co.bullets.part3chapter5.list
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
@@ -50,6 +51,7 @@ class ListAdapter : ListAdapter<ListItem, RecyclerView.ViewHolder>(diffUtil) {
                 return oldItem.thumbnailUrl == newItem.thumbnailUrl
             }
 
+            @SuppressLint("DiffUtilEquals")
             override fun areContentsTheSame(oldItem: ListItem, newItem: ListItem): Boolean {
                 return oldItem == newItem
             }
