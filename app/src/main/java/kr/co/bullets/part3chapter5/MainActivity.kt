@@ -5,14 +5,23 @@ import android.os.Bundle
 import android.view.Menu
 import android.widget.SearchView
 import com.google.android.material.tabs.TabLayoutMediator
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.core.ObservableEmitter
+import io.reactivex.rxjava3.core.Scheduler
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 
 import kr.co.bullets.part3chapter5.databinding.ActivityMainBinding
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val searchFragment = SearchFragment()
     private val fragmentList = listOf(searchFragment, FavoritesFragment())
     private val adapter = ViewPagerAdapter(supportFragmentManager, lifecycle, fragmentList)
+
+    private var observableTextQuery: Disposable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,20 +44,37 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        observableTextQuery?.dispose()
+        observableTextQuery = null
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.options_menu, menu)
 
-        (menu.findItem(R.id.search).actionView as SearchView).apply {
-            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String): Boolean {
-                    return false
-                }
+        observableTextQuery = Observable.create { emitter: ObservableEmitter<String>? ->
+            (menu.findItem(R.id.search).actionView as SearchView).apply {
+                setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String): Boolean {
+                        emitter?.onNext(query)
+                        return false
+                    }
 
-                override fun onQueryTextChange(newText: String): Boolean {
-                    return false
-                }
-            })
+                    override fun onQueryTextChange(newText: String): Boolean {
+                        binding.viewPager.setCurrentItem(0, true)
+                        emitter?.onNext(newText)
+                        return false
+                    }
+                })
+            }
         }
+            .debounce(500, TimeUnit.MILLISECONDS)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                searchFragment.searchKeyword(it)
+            }
         return true
     }
 }
